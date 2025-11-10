@@ -30,7 +30,9 @@ public class RobotContainer {
     new Trigger(() -> vision.isAligned()).onTrue(frisbeelauncher.fire());
   }
 
-  public void thisdoesnothing() {}
+  public void thisdoesnothing() {
+    // this is just to keep from getting an error in the Robot class because RobotContainer is never directly called.
+  }
 
   // Need to define game states and track them
   // States = {Idle -> Navigate -> Target -> Fire -> Locate -> Pickup -> Manual}
