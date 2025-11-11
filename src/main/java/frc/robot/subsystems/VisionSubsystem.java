@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.math.geometry.*;
 
 import org.photonvision.PhotonCamera;
 
@@ -14,6 +15,8 @@ public class VisionSubsystem extends SubsystemBase {
     double targetPitch;
     boolean aligned;
     double deadband = 2.0;
+    Transform3d lastSeenPos;
+    
 
     public VisionSubsystem() {
         camera = new PhotonCamera("FrontLeftCamera");
@@ -46,15 +49,8 @@ public class VisionSubsystem extends SubsystemBase {
         if (!results.isEmpty()) {
             var result = results.get(results.size() -1);
             if (result.hasTargets()){
-                for (var target : result.getTargets()) {
-                    if (target.getFiducialId() == 1) {
-                        targetVisible = true;
-                        targetYaw = target.getYaw();
-                        targetArea = target.getArea();
-                        targetPitch = target.getPitch();
-                        aligned = Math.abs(targetYaw) < deadband;
-                    }
-                }
+                var mTagResult = result.getMultiTagResult();
+                lastSeenPos = mTagResult.get().estimatedPose.best;
             }
         }
     }
