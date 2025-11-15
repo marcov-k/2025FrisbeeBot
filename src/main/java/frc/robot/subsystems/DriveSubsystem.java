@@ -22,6 +22,10 @@ public class DriveSubsystem extends SubsystemBase {
   
     public static final class DriveConstants {
 
+        // Controller constants
+        public static final double speedlimit = 0.20;
+        public static final double deadband = 0.02;
+
         // SPARK MAX CAN IDs
         public static final int kFrontLeftDrivingCanId = 1;
         public static final int kFrontRightDrivingCanId = 2;
@@ -126,9 +130,9 @@ public class DriveSubsystem extends SubsystemBase {
     public Command driveCommand(XboxController controller, boolean fieldRelative){
         return Commands.run(
             () -> {
-                double forward = MathUtil.applyDeadband(-controller.getLeftY() * 0.2, 0.020);
-                double strafe = MathUtil.applyDeadband(controller.getLeftX() * 0.2, 0.02);
-                double rotate = MathUtil.applyDeadband(controller.getRightX() * 0.2, 0.02);
+                double forward = MathUtil.applyDeadband(-controller.getLeftY() * DriveConstants.speedlimit, DriveConstants.deadband);
+                double strafe = MathUtil.applyDeadband(controller.getLeftX() * DriveConstants.speedlimit, DriveConstants.deadband);
+                double rotate = MathUtil.applyDeadband(controller.getRightX() * DriveConstants.speedlimit, DriveConstants.deadband);
                 this.drive(forward, strafe, rotate, fieldRelative);
             }
             , this);
