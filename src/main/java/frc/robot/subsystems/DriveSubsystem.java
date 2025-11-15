@@ -5,11 +5,17 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -57,8 +63,25 @@ public class DriveSubsystem extends SubsystemBase {
         public static final double kFrontRightChassisAngularOffset = 0;
         public static final double kBackLeftChassisAngularOffset = Math.PI;
         public static final double kBackRightChassisAngularOffset = Math.PI / 2;
+
+        public static final double kUnitstoFeet = 4.2;
       
     }  
+
+    // NetworkTable Entries for Position
+    private NetworkTableEntry PoseX;
+    private NetworkTableEntry PoseY;
+    private NetworkTableEntry PoseZ;
+
+
+    /** Creates a new DriveSubsystem. */
+    public DriveSubsystem() {
+        // Initialize NetworkTable variables
+        NetworkTable PoseTable = NetworkTableInstance.getDefault().getTable("Pose");
+        PoseX = PoseTable.getEntry("X");
+        PoseY = PoseTable.getEntry("Y");
+        PoseZ = PoseTable.getEntry("Z");
+    }
 
     // Create 4 instances of SwerveModules
     private final SwerveModule m_frontLeft = new SwerveModule(
@@ -83,6 +106,66 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Create NavX AHRS Gyroscope
     private final AHRS m_gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
+
+    // Odometry class for tracking robot pose
+    SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
+        DriveConstants.kDriveKinematics, 
+        getRotation2d(),
+        new SwerveModulePosition[] {
+            m_frontLeft.getPosition(),
+            m_frontRight.getPosition(),
+            m_rearLeft.getPosition(),
+            m_rearRight.getPosition()
+        }    
+    );
+
+    private Pose2d currentPose = new Pose2d();
+
+    /**
+     * Returns the rotation2D of the robot based on the gyroscope
+     *
+     * @return The rotation2D 
+     */
+    public Rotation2d getRotation2d() {
+        return Rotation2d.fromDegrees(-m_gyro.getAngle());  
+    }
+
+
+    @Override
+    public void periodic() {
+      // Update the odometry in the periodic block
+      m_odometry.update(
+          getRotation2d(),
+          new SwerveModulePosition[] {
+              m_frontLeft.getPosition(),
+              m_frontRight.getPosition(),
+              m_rearLeft.getPosition(),
+              m_rearRight.getPosition()
+          });
+      
+      // Get the current pose
+      currentPose = m_odometry.getPoseMeters();
+  
+      // Convert X and Y values to feet and round 
+      // positive X value represents distance traveled forward
+      double forward = currentPose.getX();  
+      forward = forward * DriveConstants.kUnitstoFeet; // Convert to feet
+      forward = Math.round(forward * 100) / 100D; // Round
+  
+      // positive Y value represents distance traveled to the left  
+      double side = -currentPose.getY();  // Make left negative
+      side = side * DriveConstants.kUnitstoFeet; // Convert to feet
+      side = Math.round(side * 100) / 100D; // Round
+  
+      // Publish position and current heading to NetworkTables
+      PoseX.setDouble(forward);
+      PoseY.setDouble(side);
+      // PoseZ.setDouble(currentPose.getRotation().getDegrees());
+      double currentangle = m_gyro.getAngle() % 360;
+      PoseZ.setDouble(currentangle);
+  
+      
+    }
 
 
     /**
