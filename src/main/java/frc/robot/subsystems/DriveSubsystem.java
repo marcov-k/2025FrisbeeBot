@@ -13,10 +13,10 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
+
 
 public class DriveSubsystem extends SubsystemBase {
   
@@ -78,7 +78,7 @@ public class DriveSubsystem extends SubsystemBase {
         DriveConstants.kBackRightChassisAngularOffset);
 
     // Create NavX AHRS Gyroscope
-    private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);
+    private final AHRS m_gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
 
 
     /**
