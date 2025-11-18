@@ -13,7 +13,7 @@ public class VisionSubsystem extends SubsystemBase {
     double targetArea;
     double targetPitch;
     boolean aligned;
-    double deadband = 2.0;
+    double deadband = 1.0;
 
     public VisionSubsystem() {
         camera = new PhotonCamera("FrontLeftCamera");
@@ -52,7 +52,7 @@ public class VisionSubsystem extends SubsystemBase {
                         targetYaw = target.getYaw();
                         targetArea = target.getArea();
                         targetPitch = target.getPitch();
-                        aligned = Math.abs(targetYaw) < deadband;
+                        aligned = Math.abs(targetYaw-1.0) < deadband;
                     }
                 }
             }
@@ -66,7 +66,7 @@ public class VisionSubsystem extends SubsystemBase {
         // Clamp yaw and convert to rotation (power) 
         double maxYaw = 30.0;
         double maxPower = 0.25;
-        double clampedYaw = Math.max(-maxYaw, Math.min(maxYaw, targetYaw));
+        double clampedYaw = Math.max(-maxYaw, Math.min(maxYaw, targetYaw-1.0));
         double rotation = (clampedYaw / maxYaw) * maxPower;        
 
         return rotation;

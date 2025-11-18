@@ -39,26 +39,23 @@ public class FrisbeeLauncher extends SubsystemBase {
     }
 
     public Command reload() {
-        return Commands.runOnce(() -> this.loaded = true);
+        return Commands.runOnce(() -> loaded = true);
+    }
+
+    public boolean isLoaded() {
+        return loaded;
     }
 
     public Command fire() {
-        Command thiscommand;
-        if (loaded == false) {
-            thiscommand = Commands.none();
-        }
-        else {
-            thiscommand = Commands.sequence(
-                Commands.runOnce(() -> FrisbeeLaunchMotor.set(1)), // Set Frisbee launch motor to full speed            
-                Commands.waitSeconds(1.0), // Wait another half a second
-                Commands.runOnce(() -> FrisbeeLoadingMotor.set(1)), // Load the frisbee
-                Commands.runOnce(() -> this.loaded = false),
-                Commands.waitSeconds(1.0) // Fire 
-            ).finallyDo(() -> {
-                FrisbeeLaunchMotor.stopMotor(); // let the motors coast
-                FrisbeeLoadingMotor.stopMotor();
-            });
-        }
-        return thiscommand;
+        return Commands.sequence(
+            Commands.runOnce(() -> FrisbeeLaunchMotor.set(1)), // Set Frisbee launch motor to full speed            
+            Commands.waitSeconds(1.0), // Wait another half a second
+            Commands.runOnce(() -> FrisbeeLoadingMotor.set(1)), // Load the frisbee
+            Commands.waitSeconds(1.0) // Fire 
+        ).finallyDo(() -> {
+            FrisbeeLaunchMotor.stopMotor(); // let the motors coast
+            FrisbeeLoadingMotor.stopMotor();
+            loaded = false;
+        });
     }
 }
