@@ -25,11 +25,6 @@ public class VisionSubsystem extends SubsystemBase {
         return aligned;
     }
 
-    public Command reset() {
-        aligned = false;
-        return Commands.none();
-    }
-
     @Override
     public void periodic() {
         UpdateVision();
