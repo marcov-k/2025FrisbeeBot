@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.math.geometry.*;
 
 import org.photonvision.PhotonCamera;
 
@@ -14,9 +13,7 @@ public class VisionSubsystem extends SubsystemBase {
     double targetArea;
     double targetPitch;
     boolean aligned;
-    double deadband = 2.0;
-    Transform3d lastSeenPos;
-    
+    double deadband = 1.0;
 
     public VisionSubsystem() {
         camera = new PhotonCamera("FrontLeftCamera");
@@ -44,8 +41,15 @@ public class VisionSubsystem extends SubsystemBase {
         if (!results.isEmpty()) {
             var result = results.get(results.size() -1);
             if (result.hasTargets()){
-                var mTagResult = result.getMultiTagResult();
-                lastSeenPos = mTagResult.get().estimatedPose.best;
+                for (var target : result.getTargets()) {
+                    if (target.getFiducialId() == 1) {
+                        targetVisible = true;
+                        targetYaw = target.getYaw();
+                        targetArea = target.getArea();
+                        targetPitch = target.getPitch();
+                        aligned = Math.abs(targetYaw) < deadband;
+                    }
+                }
             }
         }
     }
@@ -57,7 +61,7 @@ public class VisionSubsystem extends SubsystemBase {
         // Clamp yaw and convert to rotation (power) 
         double maxYaw = 30.0;
         double maxPower = 0.25;
-        double clampedYaw = Math.max(-maxYaw, Math.min(maxYaw, targetYaw));
+        double clampedYaw = Math.max(-maxYaw, Math.min(maxYaw, targetYaw-1.0));
         double rotation = (clampedYaw / maxYaw) * maxPower;        
 
         return rotation;
