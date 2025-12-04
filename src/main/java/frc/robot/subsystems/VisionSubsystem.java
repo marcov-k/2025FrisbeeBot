@@ -3,17 +3,20 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.math.geometry.*;
 
 import org.photonvision.PhotonCamera;
 
 public class VisionSubsystem extends SubsystemBase {
     PhotonCamera camera;
-    boolean targetVisible;
+    boolean tagsVisible;
     double targetYaw;
     double targetArea;
     double targetPitch;
     boolean aligned;
     double deadband = 1.0;
+    Pose2d currentPose;
+    double currentAngle;
 
     public VisionSubsystem() {
         camera = new PhotonCamera("FrontLeftCamera");
@@ -25,6 +28,16 @@ public class VisionSubsystem extends SubsystemBase {
         return aligned;
     }
 
+    public Pose2d getPose()
+    {
+        return currentPose;
+    }
+
+    public double getAngle()
+    {
+        return currentAngle;
+    }
+
     @Override
     public void periodic() {
         UpdateVision();
@@ -32,31 +45,24 @@ public class VisionSubsystem extends SubsystemBase {
 
 
     public void UpdateVision() {
-        targetVisible = false;
-        targetYaw = 360.0;
-        targetArea = 0.0;
-        targetPitch = 0.0;
+        tagsVisible = false;
 
         var results = camera.getAllUnreadResults();
         if (!results.isEmpty()) {
             var result = results.get(results.size() -1);
-            if (result.hasTargets()){
-                for (var target : result.getTargets()) {
-                    if (target.getFiducialId() == 1) {
-                        targetVisible = true;
-                        targetYaw = target.getYaw();
-                        targetArea = target.getArea();
-                        targetPitch = target.getPitch();
-                        aligned = Math.abs(targetYaw) < deadband;
-                    }
-                }
+            var mTagResult = result.getMultiTagResult();
+            if (mTagResult.isPresent())
+            {
+                var position = mTagResult.get().estimatedPose.best;
+                var rot = position.getRotation();
+                currentPose = new Pose2d(position.getX(), position.getY(), new Rotation2d(rot.getZ()));
             }
         }
     }
 
     public double CalculateDriveRotation() {
 
-        if (!targetVisible || aligned) return 0;
+        if (!tagsVisible || aligned) return 0;
         
         // Clamp yaw and convert to rotation (power) 
         double maxYaw = 30.0;

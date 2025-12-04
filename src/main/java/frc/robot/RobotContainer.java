@@ -16,11 +16,13 @@ public class RobotContainer {
   private final XboxController controller = new XboxController(0);
   private final FrisbeeLauncher frisbeelauncher = new FrisbeeLauncher();
   private final VisionSubsystem vision = new VisionSubsystem();
+  private final PositionSubsystem position = new PositionSubsystem();
 
  
   public RobotContainer() {
     configureBindings();
     CommandScheduler.getInstance().setDefaultCommand(drive, drive.driveCommand(controller, true));
+    CommandScheduler.getInstance().setDefaultCommand(position, position.posUpdateCommand(vision, drive));
   }
 
 
