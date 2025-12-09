@@ -17,18 +17,21 @@ public class RobotContainer {
   private final FrisbeeLauncher frisbeelauncher = new FrisbeeLauncher();
   private final VisionSubsystem vision = new VisionSubsystem();
   private final PositionSubsystem position = new PositionSubsystem();
+  private final IntakeSubsystem intake = new IntakeSubsystem();
 
  
   public RobotContainer() {
     configureBindings();
     CommandScheduler.getInstance().setDefaultCommand(drive, drive.driveCommand(controller, true));
     CommandScheduler.getInstance().setDefaultCommand(position, position.posUpdateCommand(vision, drive));
+    CommandScheduler.getInstance().setDefaultCommand(intake, intake.intakeIdleCommand());
   }
 
 
   private void configureBindings() {
     new Trigger(() -> controller.getYButton()).onTrue(frisbeelauncher.reload());
     new Trigger(() -> controller.getXButton()).whileTrue(vision.align(drive));
+    new Trigger(() -> controller.getAButton()).whileTrue(intake.runIntake());
     new Trigger(() -> (vision.isAligned() && frisbeelauncher.isLoaded() && controller.getXButton())).onTrue(frisbeelauncher.fire());
   }
 
