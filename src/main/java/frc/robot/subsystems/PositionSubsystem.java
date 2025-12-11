@@ -58,6 +58,6 @@ public class PositionSubsystem extends SubsystemBase
         return Commands.run(() ->
         {
             this.calculateBestPos(vision, drive);
-        });
+        }, this);
     }
 }

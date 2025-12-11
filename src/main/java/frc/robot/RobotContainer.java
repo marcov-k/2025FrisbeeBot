@@ -14,8 +14,8 @@ public class RobotContainer {
   
   private final DriveSubsystem drive = new DriveSubsystem();
   private final XboxController controller = new XboxController(0);
-  private final FrisbeeLauncher frisbeelauncher = new FrisbeeLauncher();
-  private final VisionSubsystem vision = new VisionSubsystem();
+  //private final FrisbeeLauncher frisbeelauncher = new FrisbeeLauncher();
+  //private final VisionSubsystem vision = new VisionSubsystem();
   private final PositionSubsystem position = new PositionSubsystem();
   private final IntakeSubsystem intake = new IntakeSubsystem();
 
@@ -23,16 +23,15 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
     CommandScheduler.getInstance().setDefaultCommand(drive, drive.driveCommand(controller, true));
-    CommandScheduler.getInstance().setDefaultCommand(position, position.posUpdateCommand(vision, drive));
-    CommandScheduler.getInstance().setDefaultCommand(intake, intake.intakeIdleCommand());
+    //CommandScheduler.getInstance().setDefaultCommand(position, position.posUpdateCommand(vision, drive));
   }
 
 
   private void configureBindings() {
-    new Trigger(() -> controller.getYButton()).onTrue(frisbeelauncher.reload());
-    new Trigger(() -> controller.getXButton()).whileTrue(vision.align(drive));
-    new Trigger(() -> controller.getAButton()).whileTrue(intake.runIntake());
-    new Trigger(() -> (vision.isAligned() && frisbeelauncher.isLoaded() && controller.getXButton())).onTrue(frisbeelauncher.fire());
+    //new Trigger(() -> controller.getYButton()).onTrue(frisbeelauncher.reload());
+    //new Trigger(() -> controller.getXButton()).whileTrue(vision.align(drive));
+    new Trigger(() -> controller.getAButton()).onTrue(intake.runIntake());
+    //new Trigger(() -> (vision.isAligned() && frisbeelauncher.isLoaded() && controller.getXButton())).onTrue(frisbeelauncher.fire());
   }
 
   public void thisdoesnothing() {
